@@ -5,7 +5,7 @@ pipeline {
         DOCKER_IMAGE = 'k8s-jenkins-app'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         KUBERNETES_NAMESPACE = 'default'
-        PATH = "/usr/local/go/bin:/usr/local/bin:${env.PATH}"  // ADD THIS
+        PATH = "/usr/local/go/bin:/usr/local/bin:/usr/bin:${env.PATH}"
     }
     
     stages {
@@ -40,6 +40,10 @@ pipeline {
                     echo "Building Docker image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                     sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                    
+                    // Load image into k3s
+                    sh "docker save ${DOCKER_IMAGE}:${DOCKER_TAG} | sudo k3s ctr images import -"
+                    sh "docker save ${DOCKER_IMAGE}:latest | sudo k3s ctr images import -"
                 }
             }
         }
@@ -53,7 +57,7 @@ pipeline {
                         kubectl apply -f k8s/deployment.yaml -n ${KUBERNETES_NAMESPACE}
                     """
                     sh "kubectl apply -f k8s/service.yaml -n ${KUBERNETES_NAMESPACE}"
-                    sh "kubectl rollout status deployment/k8s-jenkins-app -n ${KUBERNETES_NAMESPACE}"
+                    sh "kubectl rollout status deployment/k8s-jenkins-app -n ${KUBERNETES_NAMESPACE} --timeout=5m"
                 }
             }
         }
