@@ -39,7 +39,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		response := Response{
-			Message:   "Hello from Kubernetes (Updated via Rolling Update)!",
+			Message:   "Hello from Kubernetes Update for checking",
 			Version:   version,
 			Hostname:  hostname,
 			Timestamp: time.Now().UTC().Format(time.RFC3339),
