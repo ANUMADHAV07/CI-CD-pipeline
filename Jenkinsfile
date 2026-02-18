@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = 'k8s-jenkins-app'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         KUBERNETES_NAMESPACE = 'default'
+        PATH = "/usr/local/go/bin:/usr/local/bin:${env.PATH}"  // ADD THIS
     }
     
     stages {
@@ -28,7 +29,6 @@ pipeline {
             steps {
                 script {
                     echo 'Running tests...'
-                    // Add your tests here
                     sh 'go test ./... || true'
                 }
             }

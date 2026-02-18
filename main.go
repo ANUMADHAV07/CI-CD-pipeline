@@ -19,6 +19,10 @@ type HealthResponse struct {
 	Status string `json:"status"`
 }
 
+func checkDependencies() bool {
+	return true
+}
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -41,6 +45,17 @@ func main() {
 			Timestamp: time.Now().UTC().Format(time.RFC3339),
 		}
 		json.NewEncoder(w).Encode(response)
+	})
+
+	// Add /ready endpoint (separate from /health)
+	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
+		// Check dependencies (DB, cache, etc.)
+		if checkDependencies() {
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(HealthResponse{Status: "ready"})
+		} else {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}
 	})
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
